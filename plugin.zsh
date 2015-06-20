@@ -11,8 +11,7 @@ function aliases_context() {
 
     expression="${@}"
 
-    _aliases_contexts=(
-        "$_aliases_contexts[@]" \
+    _aliases_contexts+=(
         "$context_aliases" \
         "$expression" \
     )
@@ -27,7 +26,7 @@ function _change-aliases-context() {
 
     eval "${_aliases_contexts[1]}"
 
-    for ((i = 2; i < ${#_aliases_contexts}; i += 2)); do
+    for ((i = 2; i < $((${#_aliases_contexts}-1)); i += 2)); do
         if eval "${_aliases_contexts[$i]}"; then
             eval "${_aliases_contexts[$(($i+1))]}"
         fi

@@ -13,7 +13,7 @@ aliases_context '[ "$(basename $(pwd))" = "1" ]'
 aliases_context '[ "$(basename $(pwd))" = "2" ]'
     alias t="touch file_b"
 
-aliases_context done
+aliases_context end
 EOF
 
 tests_do tmux-prepare

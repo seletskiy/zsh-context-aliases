@@ -13,7 +13,7 @@ EOF
 fi
 
 function tmux-send() {
-    tmux send-keys -t $TMUX_SESSION "${@}"
+    tmux send-keys -t $TMUX_SESSION " ${@}"
 }
 
 function tmux-prepare() {

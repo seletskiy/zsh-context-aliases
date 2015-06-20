@@ -12,7 +12,7 @@ alias s="touch"
 aliases_context is_inside_git_dir
     alias s="touch git_detected"
 
-aliases_context done
+aliases_context end
 EOF
 
 tests_do tmux-prepare

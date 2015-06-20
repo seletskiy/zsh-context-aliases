@@ -7,7 +7,7 @@ unalias -m '*'
 
 alias 1="touch file_1"
 
-aliases_context done
+aliases_context end
 EOF
 
 tests_do tmux-prepare
