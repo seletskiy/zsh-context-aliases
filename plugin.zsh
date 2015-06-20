@@ -1,6 +1,6 @@
 typeset -a _aliases_contexts
 
-function context() {
+function aliases_context() {
     previous_aliases=$_aliases_contexts[-2]
     current_aliases=$(alias -L)
 
@@ -25,9 +25,9 @@ function context() {
 function _change-aliases-context() {
     unalias -m '*'
 
-    eval "${_aliases_contexts[2]}"
+    eval "${_aliases_contexts[1]}"
 
-    for ((i = 3; i < ${#_aliases_contexts}; i += 2)); do
+    for ((i = 2; i < ${#_aliases_contexts}; i += 2)); do
         if eval "${_aliases_contexts[$i]}"; then
             eval "${_aliases_contexts[$(($i+1))]}"
         fi
@@ -38,4 +38,5 @@ function is_inside_git_dir() {
     git rev-parse --show-toplevel >/dev/null 2>&1
 }
 
+autoload -U add-zsh-hook
 add-zsh-hook precmd _change-aliases-context
