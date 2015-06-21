@@ -1,5 +1,7 @@
 typeset -a _aliases_contexts
 
+_aliases_context_loading=1
+
 function aliases_context() {
     previous_aliases=$_aliases_contexts[-2]
     current_aliases=$(alias -L)
@@ -7,7 +9,7 @@ function aliases_context() {
     context_aliases=$(diff \
         <(cat <<< "$previous_aliases") \
         <(cat <<< "$current_aliases") \
-        | grep '^[><] ' | cut -b3-)
+        | grep '^> ' | cut -b3-)
 
     expression="${@}"
 
@@ -15,22 +17,19 @@ function aliases_context() {
         "$context_aliases" \
         "$expression" \
     )
-
-    if [[ "$expression" == "end" ]]; then
-        _change-aliases-context
-    fi
 }
 
 function _change-aliases-context() {
-    if [ ${#_aliases_contexts} -eq 0 ]; then
-        return
+    if [ "$_aliases_context_loading" ]; then
+        aliases_context "true"
+        unset _aliases_context_loading
     fi
 
     unalias -m '*'
 
     eval "${_aliases_contexts[1]}"
 
-    for ((i = 2; i < $((${#_aliases_contexts}-1)); i += 2)); do
+    for ((i = 2; i < $((${#_aliases_contexts})); i += 2)); do
         if eval "${_aliases_contexts[$i]}"; then
             eval "${_aliases_contexts[$(($i+1))]}"
         fi

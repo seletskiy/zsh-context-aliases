@@ -40,11 +40,7 @@ alias s="default command"
 
 aliases_context some_expression
     alias s="context specific command"
-
-aliases_context end
 ```
-
-*Note*: `aliases_context end` is mandatory.
 
 ## Tips and tricks
 

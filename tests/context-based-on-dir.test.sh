@@ -12,13 +12,10 @@ aliases_context '[ "$(basename $(pwd))" = "1" ]'
 
 aliases_context '[ "$(basename $(pwd))" = "2" ]'
     alias t="touch file_b"
-
-aliases_context end
 EOF
 
 tests_do tmux-prepare
-tests_do tmux-send "source plugin.zsh" enter
-tests_do tmux-send "source aliases" enter
+tests_do tmux-send "source plugin.zsh && source aliases" enter
 tests_do tmux-send "cd 1" enter
 tests_do tmux-send "t" enter
 tests_do tmux-send "cd ../2" enter

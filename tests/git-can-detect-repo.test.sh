@@ -14,13 +14,11 @@ autoload is_inside_git_repo
 
 aliases_context is_inside_git_repo
     alias s="touch git_detected"
-
-aliases_context done
+    alias -L
 EOF
 
 tests_do tmux-prepare
-tests_do tmux-send "source plugin.zsh" enter
-tests_do tmux-send "source aliases" enter
+tests_do tmux-send "source plugin.zsh && source aliases" enter
 
 tests_do tmux-send "cd repo" enter
 tests_do tmux-send "s no_repo_yet" enter
