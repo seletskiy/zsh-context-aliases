@@ -19,6 +19,7 @@ function tmux-send() {
 function tmux-prepare() {
     tmux-send "cd $(tests_tmpdir)" enter
     tmux-send "zsh -df" enter
+    tmux-send "fpath+=($(tests_tmpdir))" enter
 }
 
 function tmux-wait-sync() {

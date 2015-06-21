@@ -22,6 +22,10 @@ function aliases_context() {
 }
 
 function _change-aliases-context() {
+    if [ ${#_aliases_contexts} -eq 0 ]; then
+        return
+    fi
+
     unalias -m '*'
 
     eval "${_aliases_contexts[1]}"
@@ -31,10 +35,6 @@ function _change-aliases-context() {
             eval "${_aliases_contexts[$(($i+1))]}"
         fi
     done
-}
-
-function is_inside_git_dir() {
-    git rev-parse --show-toplevel >/dev/null 2>&1
 }
 
 autoload -U add-zsh-hook
