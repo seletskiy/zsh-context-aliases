@@ -54,3 +54,7 @@ aliases_context is_inside_git_repo
     alias s='git status'
     ...
 ```
+
+Also, it's a good idea to place `aliases_context_init` in the beginning of the
+your `.zshrc` or aliases file, so if you reload configuration in running shell,
+all context aliases will get properly re-initialized.

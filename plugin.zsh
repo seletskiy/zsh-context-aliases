@@ -1,6 +1,8 @@
-typeset -a _aliases_contexts
 
-_aliases_context_loading=1
+function aliases_context_init() {
+    _aliases_contexts=()
+    _aliases_context_loading=1
+}
 
 function aliases_context() {
     previous_aliases=$_aliases_contexts[-2]
@@ -38,3 +40,5 @@ function _change-aliases-context() {
 
 autoload -U add-zsh-hook
 add-zsh-hook precmd _change-aliases-context
+
+aliases_context_init
