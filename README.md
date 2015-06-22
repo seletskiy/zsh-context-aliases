@@ -18,13 +18,7 @@ Or alias `c` can be `git commit -m`, but if working tree is not dirty, then
 ### zgen
 
 ```zsh
-if ! zgen saved; then
-    ...
-
-    zgen load seletskiy/zsh-context-aliases
-
-    zgen save
-fi
+zgen load seletskiy/zsh-context-aliases
 ```
 
 ### antigen
