@@ -15,7 +15,7 @@ Or alias `c` can be `git commit -m`, but if working tree is not dirty, then
 
 ## Installation
 
-Via zgen:
+### zgen
 
 ```zsh
 if ! zgen saved; then
@@ -25,6 +25,19 @@ if ! zgen saved; then
 
     zgen save
 fi
+```
+
+### antigen
+```zsh
+antigen bundle seletskiy/zsh-context-aliases
+```
+
+### Bare-bone usage
+```zsh
+git clone github.com/seletskiy/zsh-context-aliases ~/.zsh/zsh-context-aliases
+
+fpath+=(~/.zsh/zsh-context-aliases)
+source ~/.zsh/zsh-context-aliases
 ```
 
 ## Usage
@@ -42,6 +55,10 @@ aliases_context some_expression
     alias s="context specific command"
 ```
 
+Also, it's a good idea to place `aliases_context_init` in the beginning of the
+your `.zshrc` or aliases file, so if you reload configuration in running shell,
+all context aliases will get properly re-initialized.
+
 ## Tips and tricks
 
 Library comes with handy helper functions, which can be used to determine
@@ -55,6 +72,10 @@ aliases_context is_inside_git_repo
     ...
 ```
 
-Also, it's a good idea to place `aliases_context_init` in the beginning of the
-your `.zshrc` or aliases file, so if you reload configuration in running shell,
-all context aliases will get properly re-initialized.
+### `is_inside_git_repo`
+
+Exits with 0 status if current directory is a working directory for git repo.
+
+### `is_git_repo_dirty`
+
+Exits with 0 if current directory is a dirty working directory.
