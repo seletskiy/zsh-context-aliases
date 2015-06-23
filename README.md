@@ -73,3 +73,7 @@ Exits with 0 status if current directory is a working directory for git repo.
 ### `is_git_repo_dirty`
 
 Exits with 0 if current directory is a dirty working directory.
+
+### `is_rebase_in_progress`
+
+Exits with 0 status if rebase in progress.

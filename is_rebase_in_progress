@@ -1,0 +1,5 @@
+function is_rebase_in_progress() {
+    local git_dir="$(git rev-parse --git-dir)"
+
+    test -d "$git_dir/rebase-merge" -o -d "$git_dir/rebase-apply"
+}
