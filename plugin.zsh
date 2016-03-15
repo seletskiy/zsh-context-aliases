@@ -6,7 +6,7 @@ function aliases_context_init() {
 
 function aliases_context() {
     previous_aliases=$_aliases_contexts[-2]
-    current_aliases=$(alias -L)
+    current_aliases=$(alias -L | _fix-alias-output)
 
     context_aliases=$(diff \
         <(cat <<< "$previous_aliases") \
@@ -29,13 +29,30 @@ function _change-aliases-context() {
 
     unalias -m '*'
 
-    eval "${_aliases_contexts[1]}"
+    eval -- "${_aliases_contexts[1]}"
 
     for ((i = 2; i < $((${#_aliases_contexts})); i += 2)); do
-        if eval "${_aliases_contexts[$i]}"; then
-            eval "${_aliases_contexts[$(($i+1))]}"
+        if eval -- "${_aliases_contexts[$i]}"; then
+            eval -- "${_aliases_contexts[$(($i+1))]}"
         fi
     done
+}
+
+# Fix shitty zsh code.
+#
+# From man zshall:
+#   alias [ {+|-}gmrsL ] [ name[=value] ... ]
+#     If the -L flag is present, then print each alias in a manner suitable for
+#     putting in a startup script.
+#
+# Let's try:
+#   $ alias -- +x='chmod +x'
+#   $ alias -L
+#   alias +x='chmod +x'
+#   $ eval $(alias -L)
+#   zsh: bad option: -x
+function _fix-alias-output() {
+    sed -re 's/alias \+/alias -- +/'
 }
 
 autoload -U add-zsh-hook
