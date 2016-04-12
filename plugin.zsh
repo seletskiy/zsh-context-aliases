@@ -1,41 +1,56 @@
-
-function aliases_context_init() {
+function context-aliases:init() {
     _aliases_contexts=()
     _aliases_context_loading=1
+    _aliases_session=''
+    _aliases_current=''
 }
 
-function aliases_context() {
-    previous_aliases=$_aliases_contexts[-2]
-    current_aliases=$(alias -L | _fix-alias-output)
+function context-aliases:match() {
+    local expression="${@}"
+    local new_aliases=$(:get-added-aliases "${_aliases_contexts[-2]}")
 
-    context_aliases=$(diff \
-        <(cat <<< "$previous_aliases") \
-        <(cat <<< "$current_aliases") \
-        | grep '^> ' | cut -b3-)
-
-    expression="${@}"
+    _aliases_context_loading=1
 
     _aliases_contexts+=(
-        "$context_aliases" \
+        "$new_aliases" \
         "$expression" \
     )
 }
 
-function _change-aliases-context() {
+function :get-added-aliases() {
+    local previous_aliases="$1"
+    local current_aliases=$(alias -L | :fix-alias-list-output)
+
+    diff \
+        <(cat <<< "$previous_aliases") \
+        <(cat <<< "$current_aliases") \
+            | grep '^> ' \
+            | cut -b3-
+}
+
+function context-aliases:on-precmd() {
     if [ "$_aliases_context_loading" ]; then
-        aliases_context "true"
+        context-aliases:match "true"
+
         unset _aliases_context_loading
+    else
+        _aliases_session=$(:get-added-aliases "$_aliases_current")
     fi
 
     unalias -m '*'
 
     eval -- "${_aliases_contexts[1]}"
 
+    local i
     for ((i = 2; i < $((${#_aliases_contexts})); i += 2)); do
         if eval -- "${_aliases_contexts[$i]}"; then
             eval -- "${_aliases_contexts[$(($i+1))]}"
         fi
     done
+
+    _aliases_current=$(alias -L | :fix-alias-list-output)
+
+    eval -- "$_aliases_session"
 }
 
 # Fix shitty zsh code.
@@ -51,11 +66,11 @@ function _change-aliases-context() {
 #   alias +x='chmod +x'
 #   $ eval $(alias -L)
 #   zsh: bad option: -x
-function _fix-alias-output() {
+function :fix-alias-list-output() {
     sed -re 's/alias \+/alias -- +/'
 }
 
 autoload -U add-zsh-hook
-add-zsh-hook precmd _change-aliases-context
+add-zsh-hook precmd context-aliases:on-precmd
 
-aliases_context_init
+context-aliases:init

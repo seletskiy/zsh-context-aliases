@@ -12,13 +12,11 @@ unalias -m '*'
 autoload is_inside_git_repo
 autoload is_git_repo_dirty
 
-aliases_context is_inside_git_repo
+context-aliases:match is_inside_git_repo
     alias s="touch git_detected"
 
-aliases_context is_inside_git_repo \&\& is_git_repo_dirty
+context-aliases:match is_inside_git_repo \&\& is_git_repo_dirty
     alias s="touch git_dirty"
-
-aliases_context done
 EOF
 
 tests_do tmux-prepare

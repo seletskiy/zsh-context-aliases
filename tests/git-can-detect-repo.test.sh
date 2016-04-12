@@ -12,7 +12,7 @@ alias s="touch"
 
 autoload is_inside_git_repo
 
-aliases_context is_inside_git_repo
+context-aliases:match is_inside_git_repo
     alias s="touch git_detected"
     alias -L
 EOF
