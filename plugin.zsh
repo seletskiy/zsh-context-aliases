@@ -3,11 +3,14 @@ function context-aliases:init() {
     _aliases_context_loading=1
     _aliases_session=''
     _aliases_current=''
+    _aliases_previous=''
 }
 
 function context-aliases:match() {
     local expression="${@}"
-    local new_aliases=$(:get-added-aliases "${_aliases_contexts[-2]}")
+    local new_aliases=$(:get-added-aliases "$_aliases_previous")
+
+    _aliases_previous=$(alias -L | :fix-alias-list-output)
 
     _aliases_context_loading=1
 
