@@ -1,3 +1,16 @@
 function is_inside_git_repo() {
-    git rev-parse --show-toplevel >/dev/null 2>&1
+    typeset -Ag _aliases_is_git_repo_cache
+
+    if [[ "${_aliases_is_git_repo_cache[$PWD]}" ]]; then
+        return 0
+    fi
+
+    if git rev-parse --show-toplevel >/dev/null 2>&1; then
+        _aliases_is_git_repo_cache=("$PWD" 1)
+
+        return 0
+    else
+        _aliases_is_git_repo_cache=()
+        return 1
+    fi
 }

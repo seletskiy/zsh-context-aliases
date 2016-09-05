@@ -4,6 +4,7 @@ function context-aliases:init() {
     _aliases_session=''
     _aliases_current=''
     _aliases_previous=''
+    _aliases_last_contexts=("--UNSET--")
 }
 
 function context-aliases:match() {
@@ -32,6 +33,35 @@ function :get-added-aliases() {
 }
 
 function context-aliases:on-precmd() {
+    local i
+    local context
+    local failed=()
+    local succeed=()
+    local new_aliases=()
+
+    for ((i = 2; i < $((${#_aliases_contexts})); i += 2)); do
+        context=${_aliases_contexts[$i]}
+
+        for prefix in "${failed[@]}"; do
+            if [[ "${context:0:${#prefix}}" == "$prefix" ]]; then
+                continue 2
+            fi
+        done
+
+        if eval -- "$context"; then
+            succeed+=("$context")
+            new_aliases+="${_aliases_contexts[$i + 1]}"
+        else
+            failed+=("$context")
+        fi
+    done
+
+    if [[ "${_aliases_last_contexts[*]}" == "${succeed[*]}" ]]; then
+        return
+    fi
+
+    _aliases_last_contexts=("${succeed[@]}")
+
     if [ "$_aliases_context_loading" ]; then
         context-aliases:match "true"
 
@@ -44,11 +74,9 @@ function context-aliases:on-precmd() {
 
     eval -- "${_aliases_contexts[1]}"
 
-    local i
-    for ((i = 2; i < $((${#_aliases_contexts})); i += 2)); do
-        if eval -- "${_aliases_contexts[$i]}"; then
-            eval -- "${_aliases_contexts[$(($i+1))]}"
-        fi
+    local code
+    for code in "${new_aliases[@]}"; do
+        eval -- "$code"
     done
 
     _aliases_current=$(alias -L | :fix-alias-list-output)
