@@ -1,38 +1,78 @@
 function context-aliases:init() {
     _aliases_contexts=()
-    _aliases_context_loading=1
-    _aliases_session=''
     _aliases_current=''
     _aliases_previous=''
     _aliases_last_contexts=("--UNSET--")
+    _aliases_cache_dir=$HOME/.cache/zsh/context-aliases
+
+    :init:cache
+}
+
+function context-aliases:commit() {
+    emulate -L zsh
+    setopt local_options rm_star_silent
+
+    _aliases_contexts+=(
+        "$(alias -L)" \
+    )
+
+    local md5sum=$(md5sum <<< "${_aliases_contexts[@]}")
+    local cache_name=${md5sum%% *}
+    local cache_path=$_aliases_cache_dir/$cache_name
+
+    if [[ -f "$cache_path" ]]; then
+        source "$cache_path"
+    else
+        ( rm -rf $_aliases_cache_dir/*; ) 2>&-
+
+        local contexts=("${_aliases_contexts[1]}")
+
+        for ((i = 2; i <= $((${#_aliases_contexts})); i += 2)); do
+            contexts[$i]=${_aliases_contexts[$i]}
+            contexts[$i+1]=$(
+                :get-added-aliases \
+                    "${_aliases_contexts[$i-1]}" \
+                    "${_aliases_contexts[$i+1]}"
+            )
+        done
+
+        _aliases_contexts=("${contexts[@]}")
+
+        typeset -p _aliases_contexts > "$_aliases_cache_dir/$cache_name"
+    fi
+
+    unalias -m '*'
+    context-aliases:on-precmd
 }
 
 function context-aliases:match() {
+    emulate -L zsh
+
     local expression="${@}"
-    local new_aliases=$(:get-added-aliases "$_aliases_previous")
-
-    _aliases_previous=$(alias -L | :fix-alias-list-output)
-
-    _aliases_context_loading=1
-
     _aliases_contexts+=(
-        "$new_aliases" \
+        "$(alias -L)" \
         "$expression" \
     )
 }
 
 function :get-added-aliases() {
     local previous_aliases="$1"
-    local current_aliases=$(alias -L | :fix-alias-list-output)
+    local current_aliases="$2"
 
     diff \
-        <(cat <<< "$previous_aliases") \
-        <(cat <<< "$current_aliases") \
+        <(<<< "$previous_aliases") \
+        <(<<< "$current_aliases") \
             | grep '^> ' \
             | cut -b3-
 }
 
+function :init:cache() {
+    mkdir -p $_aliases_cache_dir
+}
+
 function context-aliases:on-precmd() {
+    emulate -L zsh
+
     local i
     local context
     local failed=()
@@ -50,7 +90,7 @@ function context-aliases:on-precmd() {
 
         if eval -- "$context"; then
             succeed+=("$context")
-            new_aliases+="${_aliases_contexts[$i + 1]}"
+            new_aliases+="${_aliases_contexts[$i+1]}"
         else
             failed+=("$context")
         fi
@@ -62,43 +102,26 @@ function context-aliases:on-precmd() {
 
     _aliases_last_contexts=("${succeed[@]}")
 
-    if [ "$_aliases_context_loading" ]; then
-        context-aliases:match "true"
+    local session_aliases
 
-        unset _aliases_context_loading
-    else
-        _aliases_session=$(:get-added-aliases "$_aliases_current")
+    if [[ "$_aliases_current" != "$(alias -L)" ]]; then
+        session_aliases=$(
+            :get-added-aliases "$_aliases_current" "$(alias -L)"
+        )
     fi
 
     unalias -m '*'
 
-    eval -- "${_aliases_contexts[1]}"
+    eval -- ${_aliases_contexts[1]}
 
     local code
     for code in "${new_aliases[@]}"; do
         eval -- "$code"
     done
 
-    _aliases_current=$(alias -L | :fix-alias-list-output)
+    _aliases_current=$(alias -L)
 
-    eval -- "$_aliases_session"
-}
-
-# Fix shitty zsh code.
-#
-# From man zshall:
-#   alias [ {+|-}gmrsL ] [ name[=value] ... ]
-#     If the -L flag is present, then print each alias in a manner suitable for
-#     putting in a startup script.
-#
-# Let's try:
-#   $ alias -- +x='chmod +x'
-#   $ alias -L
-#   alias +x='chmod +x'
-#   $ eval $(alias -L)
-#   zsh: bad option: -x
-function :fix-alias-list-output() {
-    sed -re 's/alias \+/alias -- +/'
+    eval -- "$session_aliases"
 }
 
 autoload -U add-zsh-hook
